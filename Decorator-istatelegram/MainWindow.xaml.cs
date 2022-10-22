@@ -1,0 +1,139 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace Decorator_istatelegram
+{
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>+
+    
+    public partial class MainWindow : Window
+    {
+        private IService service = new Service();
+        private ServiceDecarator decarator { get; set; }
+        public MainWindow()
+        {
+            InitializeComponent();
+            decarator = new ServiceDecarator(service);
+        }
+        class Item
+        {
+            public string Message { get; set; }
+            public string ImagePath { get; set; }
+        }
+        interface IService
+        {
+            List<Item> GetItems(string Message);
+        }
+        class Service : IService
+        {
+            public List<Item> GetItems(string Message)
+            {
+                return new List<Item>();
+            }
+        }
+        class ServiceDecarator : IService
+        {
+            public IService _service;
+            public ServiceDecarator(IService service)
+            {
+                _service = service;
+            }
+            public virtual List<Item> GetItems(string Message)
+            {
+                return _service.GetItems(Message);
+            }
+        }
+        
+        class FacebookServiceDecarator : ServiceDecarator
+        {
+            public FacebookServiceDecarator(IService service) : base(service)
+            {
+            }
+            public override List<Item> GetItems(string Message)
+            {
+                Item item = new Item
+                {
+                    ImagePath = "Images/facebook.png",
+                    Message = $"{Message} From FacebookService"
+                };
+                var items = _service.GetItems(Message);
+                items.Add(item);
+                return items;
+            }
+        }
+        class InstagramServiceDecarator : ServiceDecarator
+        {
+            public InstagramServiceDecarator(IService service) : base(service)
+            {
+            }
+            public override List<Item> GetItems(string Message)
+            {
+                Item item = new Item
+                {
+                    ImagePath = "Images/instagram.png",
+                    Message = $"{Message} InstagramService"
+                };
+                var items = _service.GetItems(Message);
+                items.Add(item);
+                return items;
+            }
+        }
+        class TelegramServiceDecarator : ServiceDecarator
+        {
+            public TelegramServiceDecarator(IService service) : base(service)
+            {
+            }
+            public override List<Item> GetItems(string Message)
+            {
+                Item item = new Item
+                {
+                    ImagePath = "Images/telegram.png",
+                    Message = $"{Message} From TelegramService"
+                };
+                var items = _service.GetItems(Message);
+                items.Add(item);
+                return items;
+            }
+        }
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+          
+            if (facebookcheckbox.IsChecked == true)
+            {
+                IService FacebookService = new FacebookServiceDecarator(decarator);
+                service = FacebookService;
+                decarator = new ServiceDecarator(service);
+            }
+            if (instacheckbox.IsChecked == true)
+            {
+                IService InstagramService = new InstagramServiceDecarator(decarator);
+                service = InstagramService;
+                decarator = new ServiceDecarator(service);
+            }
+            if (telegramcheckbox.IsChecked == true)
+            {
+                IService TelegramService = new TelegramServiceDecarator(decarator);
+                service = TelegramService;
+                decarator = new ServiceDecarator(service);
+            }
+            List<Item> Items = decarator.GetItems(textbox.Text);
+            service = new Service();
+            decarator = new ServiceDecarator(service);
+           listview.ItemsSource = null;
+            listview.ItemsSource = Items;
+        }
+    }
+}
